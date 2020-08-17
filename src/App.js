@@ -1,14 +1,21 @@
 import React, {Suspense, useRef} from "react";
-import {Canvas, useLoader, useFrame, extend, useThree} from "react-three-fiber";
-import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
+import {Canvas, useLoader, useFrame} from "react-three-fiber";
+// import {extend, useThree} from "react-three-fiber";
+// import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 import {RecoilRoot, useRecoilState, useRecoilValue} from "recoil";
 import {TextureLoader} from "three";
-import {shipPositionState, laserPositionState} from "./gameState";
+import {shipPositionState, laserPositionState, enemyPositionState, scoreState} from "./gameState";
 import "./styles.css";
 
-// Allows use of OrbitControls with React-Three-Fiber
-extend({OrbitControls});
+// Game Settings
+const LASER_RANGE = 100;
+const LASER_Z_VELOCITY = 1;
+const ENEMY_SPEED = 0.1;
+const GROUND_HEIGHT = -50;
+
+// // Allows use of OrbitControls with React-Three-Fiber
+// extend({OrbitControls});
 
 // While model 'ArWing' is loading, a placeholder white sphere will be rendered in its place
 function Loading () {
@@ -63,35 +70,33 @@ function ArWing(){
     );
 }
 
-// Used to get a reference for the Three.js Camera and canvas.
-// To add OrbitControls we need a reference to the Three.js camera and canvas element when creating the component.
-// To get these react-three-fiber provides the useThree hook, this is an escape hatch into getting access to core Three.js elements.
-    const CameraControls = () => {
-    const {
-        camera,
-        gl: {domElement},
-    } = useThree();
-
-    // Ref to the controls, so that we can update them on every frame using useFrame
-    // In order for our orbit controls to be updated on every animation frame, we need to call controls.current.update() in the render loop.
-        // Any time you need some code to run in the render loop in react-three-fiber we use the useFrame hook.
-        // In this case, since we want to call a method on OrbitControls, we also need to add a ref, and then we can call the update method.
-    const controls = useRef();
-    useFrame((state) => controls.current.update());
-    // Create the OrbitControls using orbitControls JSX element, which has been made available to us from earlier when we called extend().
-    return <orbitControls
-            ref={controls}
-            args={[camera, domElement]}
-            enableZoom={false} // Disables zoom on mouse scroll
-            // Next 4 lines will ensure camera stays locked behind model (can't scroll around)
-            maxAzimuthAngle={Math.PI / 4}
-            maxPolarAngle={Math.PI}
-            minAzimuthAngle={-Math.PI / 4}
-            minPolarAngle={0}
-            />;
-};
-
-const GROUND_HEIGHT = -50;
+// // Used to get a reference for the Three.js Camera and canvas.
+// // To add OrbitControls we need a reference to the Three.js camera and canvas element when creating the component.
+// // To get these react-three-fiber provides the useThree hook, this is an escape hatch into getting access to core Three.js elements.
+//     const CameraControls = () => {
+//     const {
+//         camera,
+//         gl: {domElement},
+//     } = useThree();
+//
+//     // Ref to the controls, so that we can update them on every frame using useFrame
+//     // In order for our orbit controls to be updated on every animation frame, we need to call controls.current.update() in the render loop.
+//         // Any time you need some code to run in the render loop in react-three-fiber we use the useFrame hook.
+//         // In this case, since we want to call a method on OrbitControls, we also need to add a ref, and then we can call the update method.
+//     const controls = useRef();
+//     useFrame((state) => controls.current.update());
+//     // Create the OrbitControls using orbitControls JSX element, which has been made available to us from earlier when we called extend().
+//     return <orbitControls
+//             ref={controls}
+//             args={[camera, domElement]}
+//             enableZoom={false} // Disables zoom on mouse scroll
+//             // Next 4 lines will ensure camera stays locked behind model (can't scroll around)
+//             maxAzimuthAngle={Math.PI / 4}
+//             maxPolarAngle={Math.PI}
+//             minAzimuthAngle={-Math.PI / 4}
+//             minPolarAngle={0}
+//             />;
+// };
 
 // To animate an object in React Three Fiber:
     // create a ref attached to the mesh
@@ -105,6 +110,8 @@ const GROUND_HEIGHT = -50;
         useFrame(() => {
             terrain.current.position.z += 0.4;
         });
+        // Returns a mesh at GROUND_HEIGHT below the player. Scaled to 5000, 5000 with 128 segments.
+        // X Rotation is -Math.PI / 2 which is 90 degrees in radians.
         return (
             <mesh
                 visible
@@ -201,7 +208,7 @@ function LaserController() {
                 ])
             }
         >
-            <planeBufferGeometry attach="geometry" args{[100, 100]} />
+            <planeBufferGeometry attach="geometry" args={[100, 100]} />
             <meshStandardMaterial
                 attach="material"
                 color="orange"
@@ -212,6 +219,75 @@ function LaserController() {
     );
 }
 
+// Manages Drawing enemies that currently exist in state
+function Enemies() {
+        const enemies = useRecoilValue(enemyPositionState);
+        return (
+            <group>
+                {enemies.map((enemy) => (
+                    <mesh position={[enemy.x, enemy.y, enemy.z]} key={`$enemy.x`}>
+                        <sphereBufferGeometry attach="geometry" args={[2, 8, 8]} />
+                        <meshStandardMaterial attach="material" color="white" wireframe />
+                    </mesh>
+                ))}
+            </group>
+        );
+}
+
+// Main game loop code:
+    // It powers the movement of all the lasers and enemies...
+    // as well as controls hit detection and collisions.
+// This component runs game logic on each frame draw to update game state.
+function GameTimer() {
+        const [enemies, setEnemies] = useRecoilState(enemyPositionState);
+        const [lasers, setLaserPositions] = useRecoilState(laserPositionState);
+        const [score, setScore] = useRecoilState(scoreState);
+
+        useFrame(({mouse}) => {
+            // Map through all of the enemies in state. Detect if each enemy is within one unit of a laser if they are set that place in the return array to true.
+            // The result will be an array where each index is either a hit enemy or an unhit enemy.
+            const hitEnemies = enemies
+            ? enemies.map(
+                    (enemy) =>
+                        lasers.filter(
+                            (laser) =>
+                                laser.z - enemy.z < 1 &&
+                                laser.x - enemy.x < 1 &&
+                                laser.y - enemy.y < 1
+                        ).length > 0
+                )
+                : [];
+
+            // Update the Score for each destroyed enemy
+            if (hitEnemies.includes(true) && enemies.length > 0) {
+            setScore(score + hitEnemies.filter((hit) => hit).length);
+            console.log("hit detected");
+            }
+
+            // Move all of the enemies. Remove enemies that have been destroyed, or that have passed the player (as indicated by being positioned greater than 0 on the z access).
+            setEnemies(
+                enemies
+                    .map((enemy) => ({x: enemy.x, y: enemy.y, z: enemy.z + ENEMY_SPEED}))
+                    .filter((enemy, idx) => !hitEnemies[idx] && enemy.z < 0)
+            );
+
+            // Move the Lasers and remove lasers at end of range or that have hit the ground.
+            // The lasers reference their initial velocity and increase on the x and y access according to those values, to ensure they continue traveling in the initial direction they were fired. They always move forward a fixed position on the z access though we might tweak that later for gameplay reasons. Also, filter out any lasers that have hit the end of their range, or have hit the ground.setLaserPositions
+                setLaserPositions(
+                    lasers
+                    .map((laser) =>({
+                    id: laser.id,
+                    x: laser.x + laser.velocity[0],
+                    y: laser.y + laser.velocity[1],
+                    z: laser.z - LASER_Z_VELOCITY,
+                    velocity: laser.velocity,
+        }))
+                    .filter((laser) => laser.z > -LASER_RANGE && laser.y > GROUND_HEIGHT)
+            );
+        });
+            return null;
+}
+
 export default function App() {
     return (
         <Canvas style={{background: "#171717"}}> {/* Sets background color of canvas */}
@@ -219,12 +295,14 @@ export default function App() {
                 <directionalLight intensity={1}/>
                 <ambientLight intensity={0.1}/>
                 <Suspense fallback={<Loading/>}>
-                    <ArWing/>
+                <ArWing/>
                 </Suspense>
                 <Target/>
+                <Enemies />
                 <Lasers/>
                 <Terrain/>
                 <LaserController />
+                <GameTimer />
             </RecoilRoot>
         </Canvas>
     );
