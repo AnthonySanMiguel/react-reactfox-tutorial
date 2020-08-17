@@ -2,7 +2,9 @@ import React, {Suspense, useRef} from "react";
 import {Canvas, useLoader, useFrame, extend, useThree} from "react-three-fiber";
 import {OrbitControls} from "three/examples/jsm/controls/OrbitControls";
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
+import {RecoilRoot, useRecoilState, useRecoilValue} from "recoil";
 import {TextureLoader} from "three";
+import {shipPositionState, laserPositionState} from "./gameState";
 import "./styles.css";
 
 // Allows use of OrbitControls with React-Three-Fiber
@@ -28,7 +30,7 @@ function Loading () {
 // The player's ship model.
 function ArWing(){
     // On each frame, check the cursor position and move the ship to point in the correct direction.
-    const [shipPosition, setShipPosition] = useState();
+    const [shipPosition, setShipPosition] = useRecoilState(shipPositionState); // Ship position is being stored in Recoil, and we will be able to access it from other components.
 
     const ship = useRef();
     useFrame(({mouse}) => {
@@ -159,15 +161,71 @@ const GROUND_HEIGHT = -50;
     );
 }
 
-export default function App(){
-    return(
+// Draws all of the lasers existing in state.
+    // UseRecoilValue hook along with the laserPositionState atom to get the array of lasers from the state. Then in the return value, map over the array of lasers returning a cube mesh for each one.
+function Lasers() {
+    const lasers = useRecoilValue(laserPositionState);
+    return (
+        <group>
+            {lasers.map((laser) => (
+            <mesh position={[laser.x, laser.y, laser.z]} key={`${laser.id}`}>
+            <boxBufferGeometry attach="geometry" args={[1, 1, 1]} />
+            <meshStandardMaterial attach="material" emissive="white" wireframe />
+            </mesh>
+            ))}
+        </group>
+    );
+}
+
+// An invisible clickable element in the front of the scene.
+// Manages creating lasers with the correct initial velocity on click.
+function LaserController() {
+    const shipPosition = useRecoilValue(shipPositionState);
+    const [lasers, setLasers] = useRecoilState(laserPositionState);
+    return (
+        <mesh
+            position={[0, 0, -8]}
+            onClick={() =>
+                setLasers([
+                    ...lasers,
+                    {
+                        id: Math.random(),
+                        x: 0,
+                        y: 0,
+                        z: 0,
+                        velocity: [
+                            shipPosition.rotation.x * 6,
+                            shipPosition.rotation.y * 5,
+                        ],
+                    },
+                ])
+            }
+        >
+            <planeBufferGeometry attach="geometry" args{[100, 100]} />
+            <meshStandardMaterial
+                attach="material"
+                color="orange"
+                emissive="#ff0860"
+                visible={false}
+            />
+        </mesh>
+    );
+}
+
+export default function App() {
+    return (
         <Canvas style={{background: "#171717"}}> {/* Sets background color of canvas */}
-            <directionalLight intensity={1} />
-            <ambientLight intensity={1} />
-            <Suspense fallback={<Loading />}>
-                <ArWing />
-            </Suspense>
-            <Terrain />
+            <RecoilRoot> {/* To access Recoil values, you need to wrap your components in the RecoilRoot component. Only components under this provider will have access to the Recoil state. Usually you would put this at the very top of your component tree, but with React Three Fiber there is an issue putting it above the Canvas component. So we can put it just inside of our canvas. */}
+                <directionalLight intensity={1}/>
+                <ambientLight intensity={0.1}/>
+                <Suspense fallback={<Loading/>}>
+                    <ArWing/>
+                </Suspense>
+                <Target/>
+                <Lasers/>
+                <Terrain/>
+                <LaserController />
+            </RecoilRoot>
         </Canvas>
     );
 }
