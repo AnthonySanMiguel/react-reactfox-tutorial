@@ -63,8 +63,6 @@ function ArWing(){
                 <meshStandardMaterial
                     attach="material"
                     color="blue"
-                    roughness={1}
-                    metalness={0.5}
                 />
             </mesh>
         </group>
@@ -105,7 +103,10 @@ function ArWing(){
     // and set the position z coordinate to be increased on each frame. (This will move the terrain .4 units closer to the camera on each frame.)
 
 // A Ground plane that moves relative to the player. The player stays at 0,0
-    function Terrain(){
+const grassTextureLoader = new TextureLoader();
+const grassTexture = grassTextureLoader.load("grass.jpg");
+
+function Terrain(){
         const terrain = useRef();
 
         useFrame(() => {
@@ -123,14 +124,12 @@ function ArWing(){
                 <planeBufferGeometry attach="geometry" args={[3000, 2000, 1, 25]} />
                                                    {/* Arg 1 = panoramic view;
                                                        Arg 2 = terrain distance before ending;
-                                                       Arg 3 = number of horizontal terrain rows;
-                                                       Arg 4 = number of vertical terrain rows;*/}
+                                                       Arg 3 = number of vertical terrain rows;
+                                                       Arg 4 = number of horizontal terrain rows;*/}
                 <meshStandardMaterial
                     attach="material"
-                    color="green"
-                    roughness={1}
-                    metalness={0}
-                    wireframe
+                    color="#254c00"
+                    map={grassTexture}
                 />
             </mesh>
         );
@@ -145,7 +144,7 @@ function ArWing(){
 
         const loader = new TextureLoader();
         // A png with transparency to use as the target sprite.
-        const texture = loader.load("target.png");
+        const targetTexture = loader.load("target.png");
 
 // Update the position of both sprites based on the mouse x and y position. The front target has a larger scalar.
     // Its movement in both axis is exaggerated since its farther in front.
@@ -164,10 +163,10 @@ function ArWing(){
     return (
         <group>
             <sprite position={[0, 0, -8]} ref={rearTarget}>
-                <spriteMaterial attach="material" map={texture} />
+                <spriteMaterial attach="material" map={targetTexture} />
             </sprite>
             <sprite position={[0, 0, -16]} ref={frontTarget}>
-                <spriteMaterial attach="material" map={texture} />
+                <spriteMaterial attach="material" map={targetTexture} />
             </sprite>
         </group>
     );
@@ -175,17 +174,20 @@ function ArWing(){
 
 // Draws all of the lasers existing in state.
     // UseRecoilValue hook along with the laserPositionState atom to get the array of lasers from the state. Then in the return value, map over the array of lasers returning a cube mesh for each one.
+const laserTextureLoader = new TextureLoader();
+const laserTexture = laserTextureLoader.load("laser.png");
+
 function Lasers() {
     const lasers = useRecoilValue(laserPositionState);
     return (
         <group>
             {lasers.map((laser) => (
             <mesh position={[laser.x, laser.y, laser.z]} key={`${laser.id}`}>
-            <boxBufferGeometry attach="geometry" args={[.5, .25, 0]} />
+            <sphereBufferGeometry attach="geometry" args={[.5, .5, .5]} />
                                              {/* Arg 1 = Width of projectile
                                                  Arg 2 = Height of projectile
                                                  Arg 3 = Length of projectile */}
-            <meshStandardMaterial attach="material" emissive="red"/>
+            <meshStandardMaterial attach="material" emissive="#ff073a" map={laserTexture}/>
             </mesh>
             ))}
         </group>
@@ -228,6 +230,9 @@ function LaserController() {
 }
 
 // Manages drawing enemies that currently exist in state
+const buildingTextureLoader = new TextureLoader();
+const buildingTexture = buildingTextureLoader.load("building.jpg");
+
 function Enemies() {
     const enemies = useRecoilValue(enemyPositionState);
     return (
@@ -239,7 +244,7 @@ function Enemies() {
                                                      {/* Arg 1 = Width of box structure
                                                          Arg 2 = Height of box structure
                                                          Arg 1 = Length of box structure */}
-                    <meshStandardMaterial attach="material" color="#878787"/>
+                    <meshStandardMaterial attach="material" color="#878787" map={buildingTexture}/>
                 </mesh>
             ))}
         </group>
@@ -247,6 +252,9 @@ function Enemies() {
 }
 
 // Manages drawing mountains that currently exist in state
+const mountainTextureLoader = new TextureLoader();
+const mountainTexture = mountainTextureLoader.load("mountain.jpg");
+
 function Mountains() {
     const mountains = useRecoilValue(mountainPositionState);
     return (
@@ -257,12 +265,13 @@ function Mountains() {
                                                      {/* Arg 1 = Width of cylinder structure
                                                          Arg 2 = Height of cylinder structure
                                                          Arg 1 = Length of cylinder structure */}
-                    <meshStandardMaterial attach="material" color="#5c4033"/>
+                    <meshStandardMaterial attach="material" color="#5c4033" map={mountainTexture}/>
                 </mesh>
             ))}
         </group>
     );
 }
+
 // Main game loop code:
     // It powers the movement of all the lasers and enemies...
     // as well as controls hit detection and collisions.
@@ -304,7 +313,6 @@ function GameTimer() {
             setMountains(
                 mountains
                     .map((mountain) => ({x: mountain.x, y: mountain.y, z: mountain.z + ENEMY_SPEED}))
-                    // .filter((mountain, idx) => !hitMountains[idx] && mountain.z < 0)
             );
 
             // Move the Lasers and remove lasers at end of range or that have hit the ground.

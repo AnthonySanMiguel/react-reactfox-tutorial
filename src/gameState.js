@@ -19,18 +19,18 @@ export const enemyPositionState = atom({
 
         // REMINDER: Try to give enemies with widest 'X' variables more 'Z' spawn distance
 
-        {x: Math.floor(Math.random() * 50) + 5, y: -20, z: Math.floor(Math.random() * 5) - 300},
-        {x: Math.floor(Math.random() * 200) + 5, y: -20, z: Math.floor(Math.random() * 5) - 400},
-        {x: Math.floor(Math.random() * 200) + 5, y: -20, z: Math.floor(Math.random() * 5) - 600},
-        {x: Math.floor(Math.random() * 5) - 50, y: -20, z: Math.floor(Math.random() * 5) - 400},
-        {x: Math.floor(Math.random() * 5) - 200, y: -20, z: Math.floor(Math.random() * 5) - 600},
-        {x: Math.floor(Math.random() * 5) - 200, y: -20, z: Math.floor(Math.random() * 5) - 600}
+        {x: Math.floor(Math.random() * 50) + 5, y: -25, z: Math.floor(Math.random() * 5) - 300},
+        {x: Math.floor(Math.random() * 200) + 5, y: -25, z: Math.floor(Math.random() * 5) - 400},
+        {x: Math.floor(Math.random() * 200) + 5, y: -25, z: Math.floor(Math.random() * 5) - 600},
+        {x: Math.floor(Math.random() * 5) - 50, y: -25, z: Math.floor(Math.random() * 5) - 400},
+        {x: Math.floor(Math.random() * 5) - 200, y: -25, z: Math.floor(Math.random() * 5) - 600},
+        {x: Math.floor(Math.random() * 5) - 200, y: -25, z: Math.floor(Math.random() * 5) - 600}
     ],
 });
 
 // "Atom" to store position(s) of mountain range
 let yCoordinate = -20;
-let zCoordinate = -800;
+let zCoordinate = -775;
 
 export const mountainPositionState = atom({
     key: "mountainPosition",
