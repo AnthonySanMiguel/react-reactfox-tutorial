@@ -5,7 +5,7 @@ import {Canvas, useLoader, useFrame} from "react-three-fiber";
 import {GLTFLoader} from "three/examples/jsm/loaders/GLTFLoader";
 import {RecoilRoot, useRecoilState, useRecoilValue} from "recoil";
 import {TextureLoader} from "three";
-import {shipPositionState, laserPositionState, enemyPositionState, scoreState} from "./gameState";
+import {shipPositionState, laserPositionState, enemyPositionState, mountainPositionState, scoreState} from "./gameState";
 import "./styles.css";
 
 // Game Settings
@@ -204,7 +204,7 @@ function LaserController() {
                 setLasers([
                     ...lasers,
                     {
-                        id: Math.random(),
+                        id: Math.random(), // Gives each fired laser onClick its own unique ID for tracking (a random integer)
                         x: 0,
                         y: 0,
                         z: 0,
@@ -227,33 +227,55 @@ function LaserController() {
     );
 }
 
-// Manages Drawing enemies that currently exist in state
+// Manages drawing enemies that currently exist in state
 function Enemies() {
     const enemies = useRecoilValue(enemyPositionState);
     return (
         <group>
             {enemies.map(enemy => (
                 <mesh position={[enemy.x, enemy.y, enemy.z]} key={`${enemy.x}`}>
-                    <cylinderBufferGeometry attach="geometry" args={[2, 18, 40]} />
-                    <meshStandardMaterial attach="material" color="yellow"/>
+                    {/*<cylinderBufferGeometry attach="geometry" args={[2, 18, 40]} />*/}
+                    <boxBufferGeometry attach="geometry" args={[45, 20, 30]} />
+                                                     {/* Arg 1 = Width of box structure
+                                                         Arg 2 = Height of box structure
+                                                         Arg 1 = Length of box structure */}
+                    <meshStandardMaterial attach="material" color="#878787"/>
                 </mesh>
             ))}
         </group>
     );
 }
 
+// Manages drawing mountains that currently exist in state
+function Mountains() {
+    const mountains = useRecoilValue(mountainPositionState);
+    return (
+        <group>
+            {mountains.map(mountain => (
+                <mesh position={[mountain.x,mountain.y, mountain.z]} key={`${mountain.x}`}>
+                    <cylinderBufferGeometry attach="geometry" args={[2, 18, 40]} />
+                                                     {/* Arg 1 = Width of cylinder structure
+                                                         Arg 2 = Height of cylinder structure
+                                                         Arg 1 = Length of cylinder structure */}
+                    <meshStandardMaterial attach="material" color="#5c4033"/>
+                </mesh>
+            ))}
+        </group>
+    );
+}
 // Main game loop code:
     // It powers the movement of all the lasers and enemies...
     // as well as controls hit detection and collisions.
 // This component runs game logic on each frame draw to update game state.
 function GameTimer() {
         const [enemies, setEnemies] = useRecoilState(enemyPositionState);
+        const [mountains, setMountains] = useRecoilState(mountainPositionState);
         const [lasers, setLaserPositions] = useRecoilState(laserPositionState);
         const [score, setScore] = useRecoilState(scoreState);
 
         useFrame(({mouse}) => {
             // Map through all of the enemies in state. Detect if each enemy is within one unit of a laser if they are set that place in the return array to true.
-            // The result will be an array where each index is either a hit enemy or an unhit enemy.
+            // The result will be an array where each index is either a hit enemy or an missed enemy.
             const hitEnemies = enemies
             ? enemies.map(
                     (enemy) =>
@@ -279,6 +301,12 @@ function GameTimer() {
                     .filter((enemy, idx) => !hitEnemies[idx] && enemy.z < 0)
             );
 
+            setMountains(
+                mountains
+                    .map((mountain) => ({x: mountain.x, y: mountain.y, z: mountain.z + ENEMY_SPEED}))
+                    // .filter((mountain, idx) => !hitMountains[idx] && mountain.z < 0)
+            );
+
             // Move the Lasers and remove lasers at end of range or that have hit the ground.
             // The lasers reference their initial velocity and increase on the x and y access according to those values, to ensure they continue traveling in the initial direction they were fired. They always move forward a fixed position on the z access though we might tweak that later for gameplay reasons. Also, filter out any lasers that have hit the end of their range, or have hit the ground.setLaserPositions
                 setLaserPositions(
@@ -301,12 +329,13 @@ export default function App() {
         <Canvas style={{background: "#171717"}}> {/* Sets background color of canvas */}
             <RecoilRoot> {/* To access Recoil values, you need to wrap your components in the RecoilRoot component. Only components under this provider will have access to the Recoil state. Usually you would put this at the very top of your component tree, but with React Three Fiber there is an issue putting it above the Canvas component. So we can put it just inside of our canvas. */}
                 <directionalLight intensity={2}/> {/* Overhead 'spotlight' on all objects in view */}
-                <ambientLight intensity={0.1}/> {/* Light emanating off of models */}
+                <ambientLight intensity={0.5}/> {/* Light emanating off of models */}
                 <Suspense fallback={<Loading/>}>
                 <ArWing/>
                 </Suspense>
                 <Target/>
                 <Enemies />
+                <Mountains />
                 <Lasers/>
                 <Terrain/>
                 <LaserController />
