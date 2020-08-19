@@ -9,7 +9,7 @@ import {shipPositionState, laserPositionState, enemyPositionState, scoreState} f
 import "./styles.css";
 
 // Game Settings
-const LASER_RANGE = 600; // Make sure to allow more range than farthest enemy "Z" coordinate (to make sure laser doesn't 'fizzle' out before hitting)
+const LASER_RANGE = 400; // Make sure to allow enough range so farthest enemy (highest enemyPosition "Z" coordinate in GameState.js file) doesn't 'fizzle' out before hitting
 const LASER_Z_VELOCITY = 1;
 const ENEMY_SPEED = 0.3; // How fast enemies advance towards you
 const GROUND_HEIGHT = -50;
@@ -109,7 +109,7 @@ function ArWing(){
         const terrain = useRef();
 
         useFrame(() => {
-            terrain.current.position.z += 0.4;
+            terrain.current.position.z += 0.4; // How fast terrain plane scrolls by/under objects
         });
         // Returns a mesh at GROUND_HEIGHT below the player. Scaled to 5000, 5000 with 128 segments.
         // X Rotation is -Math.PI / 2 which is 90 degrees in radians.
@@ -120,7 +120,7 @@ function ArWing(){
                 rotation={[-Math.PI / 2, 0, 0]}
                 ref={terrain}
             >
-                <planeBufferGeometry attach="geometry" args={[3000, 1500, 1, 50]} />
+                <planeBufferGeometry attach="geometry" args={[3000, 2000, 1, 25]} />
                                                    {/* Arg 1 = panoramic view;
                                                        Arg 2 = terrain distance before ending;
                                                        Arg 3 = number of horizontal terrain rows;
@@ -181,7 +181,7 @@ function Lasers() {
         <group>
             {lasers.map((laser) => (
             <mesh position={[laser.x, laser.y, laser.z]} key={`${laser.id}`}>
-            <boxBufferGeometry attach="geometry" args={[.25, .25, 0]} />
+            <boxBufferGeometry attach="geometry" args={[.5, .25, 0]} />
                                              {/* Arg 1 = Width of projectile
                                                  Arg 2 = Height of projectile
                                                  Arg 3 = Length of projectile */}

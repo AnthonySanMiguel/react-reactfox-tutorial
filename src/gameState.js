@@ -10,11 +10,21 @@ export const shipPositionState = atom({
 export const enemyPositionState = atom({
     key: "enemyPosition",
     default: [
-        {x: -80, y: -15, z: -240}, // X = enemy placement on ground; y = above or below ground level; z = spawn distance away from ship
-        {x: 60, y: -15, z: -265},
-        {x: 110, y: -15, z: -300},
-        {x: -200, y: -15, z: -473},
-        {x: -40, y: -15, z: -511},
+        // X = enemy placement on ground;
+        // y = above or below ground level;
+        // z = spawn distance away from ship
+
+        // Math.floor(Math.random() * 50) + 5 = Random number between 5 and 50
+        // For negative numbers, larger number goes on the right side (see below)
+
+        // REMINDER: Try to give enemies with widest 'X' variables more 'Z' spawn distance
+
+        {x: Math.floor(Math.random() * 50) + 5, y: -20, z: Math.floor(Math.random() * 5) - 300},
+        {x: Math.floor(Math.random() * 200) + 5, y: -20, z: Math.floor(Math.random() * 5) - 400},
+        {x: Math.floor(Math.random() * 200) + 5, y: -20, z: Math.floor(Math.random() * 5) - 600},
+        {x: Math.floor(Math.random() * 5) - 50, y: -20, z: Math.floor(Math.random() * 5) - 400},
+        {x: Math.floor(Math.random() * 5) - 200, y: -20, z: Math.floor(Math.random() * 5) - 600},
+        {x: Math.floor(Math.random() * 5) - 200, y: -20, z: Math.floor(Math.random() * 5) - 600}
     ],
 });
 
