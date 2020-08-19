@@ -9,9 +9,9 @@ import {shipPositionState, laserPositionState, enemyPositionState, scoreState} f
 import "./styles.css";
 
 // Game Settings
-const LASER_RANGE = 100;
+const LASER_RANGE = 600; // Make sure to allow more range than farthest enemy "Z" coordinate (to make sure laser doesn't 'fizzle' out before hitting)
 const LASER_Z_VELOCITY = 1;
-const ENEMY_SPEED = 0.1;
+const ENEMY_SPEED = 0.3; // How fast enemies advance towards you
 const GROUND_HEIGHT = -50;
 
 // // Allows use of OrbitControls with React-Three-Fiber
@@ -54,16 +54,17 @@ function ArWing(){
        ship.current.position.y = shipPosition.position.y;
        ship.current.position.x = shipPosition.position.x;
     });
-    const { nodes } = useLoader(GLTFLoader, "models/arwing.glb"); // Loads model in 'glb' format
+
+    const {nodes} = useLoader(GLTFLoader, "models/arwing.glb"); // Loads model in 'glb' format
 
     return (
         <group ref={ship}>
             <mesh visible geometry={nodes.Default.geometry}> {/* May need to change "Default" to model name if custom model used */}
                 <meshStandardMaterial
                     attach="material"
-                    color="white"
+                    color="blue"
                     roughness={1}
-                    metalness={0}
+                    metalness={0.5}
                 />
             </mesh>
         </group>
@@ -119,10 +120,14 @@ function ArWing(){
                 rotation={[-Math.PI / 2, 0, 0]}
                 ref={terrain}
             >
-                <planeBufferGeometry attach="geometry" args={[5000, 5000, 128, 128]} />
+                <planeBufferGeometry attach="geometry" args={[3000, 1500, 1, 50]} />
+                                                   {/* Arg 1 = panoramic view;
+                                                       Arg 2 = terrain distance before ending;
+                                                       Arg 3 = number of horizontal terrain rows;
+                                                       Arg 4 = number of vertical terrain rows;*/}
                 <meshStandardMaterial
                     attach="material"
-                    color="white"
+                    color="green"
                     roughness={1}
                     metalness={0}
                     wireframe
@@ -176,8 +181,11 @@ function Lasers() {
         <group>
             {lasers.map((laser) => (
             <mesh position={[laser.x, laser.y, laser.z]} key={`${laser.id}`}>
-            <boxBufferGeometry attach="geometry" args={[1, 1, 1]} />
-            <meshStandardMaterial attach="material" emissive="white" wireframe />
+            <boxBufferGeometry attach="geometry" args={[.25, .25, 0]} />
+                                             {/* Arg 1 = Width of projectile
+                                                 Arg 2 = Height of projectile
+                                                 Arg 3 = Length of projectile */}
+            <meshStandardMaterial attach="material" emissive="red"/>
             </mesh>
             ))}
         </group>
@@ -211,9 +219,9 @@ function LaserController() {
             <planeBufferGeometry attach="geometry" args={[100, 100]} />
             <meshStandardMaterial
                 attach="material"
-                color="orange"
+                color="#ff0860"
                 emissive="#ff0860"
-                visible={false}
+                visible={false} // Hide impact plane for lasers (invisible field)
             />
         </mesh>
     );
@@ -221,17 +229,17 @@ function LaserController() {
 
 // Manages Drawing enemies that currently exist in state
 function Enemies() {
-        const enemies = useRecoilValue(enemyPositionState);
-        return (
-            <group>
-                {enemies.map((enemy) => (
-                    <mesh position={[enemy.x, enemy.y, enemy.z]} key={`$enemy.x`}>
-                        <sphereBufferGeometry attach="geometry" args={[2, 8, 8]} />
-                        <meshStandardMaterial attach="material" color="white" wireframe />
-                    </mesh>
-                ))}
-            </group>
-        );
+    const enemies = useRecoilValue(enemyPositionState);
+    return (
+        <group>
+            {enemies.map(enemy => (
+                <mesh position={[enemy.x, enemy.y, enemy.z]} key={`${enemy.x}`}>
+                    <cylinderBufferGeometry attach="geometry" args={[2, 18, 40]} />
+                    <meshStandardMaterial attach="material" color="yellow"/>
+                </mesh>
+            ))}
+        </group>
+    );
 }
 
 // Main game loop code:
@@ -261,7 +269,7 @@ function GameTimer() {
             // Update the Score for each destroyed enemy
             if (hitEnemies.includes(true) && enemies.length > 0) {
             setScore(score + hitEnemies.filter((hit) => hit).length);
-            console.log("hit detected");
+            console.log("Enemy structure destroyed!");
             }
 
             // Move all of the enemies. Remove enemies that have been destroyed, or that have passed the player (as indicated by being positioned greater than 0 on the z access).
@@ -292,8 +300,8 @@ export default function App() {
     return (
         <Canvas style={{background: "#171717"}}> {/* Sets background color of canvas */}
             <RecoilRoot> {/* To access Recoil values, you need to wrap your components in the RecoilRoot component. Only components under this provider will have access to the Recoil state. Usually you would put this at the very top of your component tree, but with React Three Fiber there is an issue putting it above the Canvas component. So we can put it just inside of our canvas. */}
-                <directionalLight intensity={1}/>
-                <ambientLight intensity={0.1}/>
+                <directionalLight intensity={2}/> {/* Overhead 'spotlight' on all objects in view */}
+                <ambientLight intensity={0.1}/> {/* Light emanating off of models */}
                 <Suspense fallback={<Loading/>}>
                 <ArWing/>
                 </Suspense>

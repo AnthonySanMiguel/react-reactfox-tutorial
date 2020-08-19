@@ -10,9 +10,12 @@ export const shipPositionState = atom({
 export const enemyPositionState = atom({
     key: "enemyPosition",
     default: [
-        {x: -10, y: 10, z: -80},
-        {x: 20, y: 0, z: -100},
-        ],
+        {x: -80, y: -15, z: -240}, // X = enemy placement on ground; y = above or below ground level; z = spawn distance away from ship
+        {x: 60, y: -15, z: -265},
+        {x: 110, y: -15, z: -300},
+        {x: -200, y: -15, z: -473},
+        {x: -40, y: -15, z: -511},
+    ],
 });
 
 // "Atom" to store position of fired lasers
