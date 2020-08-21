@@ -9,7 +9,7 @@ import {shipPositionState, laserPositionState, enemyPositionState, mountainPosit
 import "./styles.css";
 
 // Game Settings
-const LASER_RANGE = 400; // Make sure to allow enough range so farthest enemy (highest enemyPosition "Z" coordinate in GameState.js file) doesn't 'fizzle' out before hitting
+const LASER_RANGE = 300; // Make sure to allow enough range so farthest enemy (highest enemyPosition "Z" coordinate in GameState.js file) doesn't 'fizzle' out before hitting
 const LASER_Z_VELOCITY = 1;
 const ENEMY_SPEED = 0.3; // How fast enemies advance towards you
 const GROUND_HEIGHT = -50;
@@ -144,7 +144,7 @@ function Terrain(){
 
         const loader = new TextureLoader();
         // A png with transparency to use as the target sprite.
-        const targetTexture = loader.load("target.png");
+        const targetTexture = loader.load("target2.png");
 
 // Update the position of both sprites based on the mouse x and y position. The front target has a larger scalar.
     // Its movement in both axis is exaggerated since its farther in front.
@@ -162,10 +162,10 @@ function Terrain(){
 // We give the spriteMaterial a map prop with the loaded sprite texture as a value.
     return (
         <group>
-            <sprite position={[0, 0, -8]} ref={rearTarget}>
+            <sprite position={[10, 10, -8]} ref={rearTarget}>
                 <spriteMaterial attach="material" map={targetTexture} />
             </sprite>
-            <sprite position={[0, 0, -16]} ref={frontTarget}>
+            <sprite position={[10, 10, -16]} ref={frontTarget}>
                 <spriteMaterial attach="material" map={targetTexture} />
             </sprite>
         </group>
@@ -261,10 +261,10 @@ function Mountains() {
         <group>
             {mountains.map(mountain => (
                 <mesh position={[mountain.x,mountain.y, mountain.z]} key={`${mountain.x}`}>
-                    <cylinderBufferGeometry attach="geometry" args={[2, 18, 40]} />
-                                                     {/* Arg 1 = Width of cylinder structure
-                                                         Arg 2 = Height of cylinder structure
-                                                         Arg 1 = Length of cylinder structure */}
+                    <cylinderBufferGeometry attach="geometry" args={[2, 38, 80]} />
+                                                     {/* Arg 1 = Length of cylinder structure
+                                                         Arg 2 = Width of cylinder structure
+                                                         Arg 1 = Height of cylinder structure */}
                     <meshStandardMaterial attach="material" color="#5c4033" map={mountainTexture}/>
                 </mesh>
             ))}
@@ -334,7 +334,7 @@ function GameTimer() {
 
 export default function App() {
     return (
-        <Canvas style={{background: "#171717"}}> {/* Sets background color of canvas */}
+        <Canvas style={{background: "#add8e6"}}> {/* Sets background color of canvas */}
             <RecoilRoot> {/* To access Recoil values, you need to wrap your components in the RecoilRoot component. Only components under this provider will have access to the Recoil state. Usually you would put this at the very top of your component tree, but with React Three Fiber there is an issue putting it above the Canvas component. So we can put it just inside of our canvas. */}
                 <directionalLight intensity={2}/> {/* Overhead 'spotlight' on all objects in view */}
                 <ambientLight intensity={0.5}/> {/* Light emanating off of models */}

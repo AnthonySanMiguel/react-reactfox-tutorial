@@ -19,23 +19,29 @@ export const enemyPositionState = atom({
 
         // REMINDER: Try to give enemies with widest 'X' variables more 'Z' spawn distance
 
-        {x: Math.floor(Math.random() * 50) + 5, y: -25, z: Math.floor(Math.random() * 5) - 300},
-        {x: Math.floor(Math.random() * 200) + 5, y: -25, z: Math.floor(Math.random() * 5) - 400},
-        {x: Math.floor(Math.random() * 200) + 5, y: -25, z: Math.floor(Math.random() * 5) - 600},
-        {x: Math.floor(Math.random() * 5) - 50, y: -25, z: Math.floor(Math.random() * 5) - 400},
-        {x: Math.floor(Math.random() * 5) - 200, y: -25, z: Math.floor(Math.random() * 5) - 600},
-        {x: Math.floor(Math.random() * 5) - 200, y: -25, z: Math.floor(Math.random() * 5) - 600}
+        {x: Math.floor(Math.random() * 50) + 5, y: -35, z: Math.floor(Math.random() * 5) - 300},
+        {x: Math.floor(Math.random() * 200) + 5, y: -35, z: Math.floor(Math.random() * 5) - 400},
+        {x: Math.floor(Math.random() * 200) + 5, y: -35, z: Math.floor(Math.random() * 5) - 600},
+        {x: Math.floor(Math.random() * 300) + 5, y: -35, z: Math.floor(Math.random() * 5) - 600},
+        {x: Math.floor(Math.random() * 300) + 5, y: -35, z: Math.floor(Math.random() * 5) - 600},
+
+        {x: Math.floor(Math.random() * 5) - 50, y: -35, z: Math.floor(Math.random() * 5) - 400},
+        {x: Math.floor(Math.random() * 5) - 200, y: -35, z: Math.floor(Math.random() * 5) - 600},
+        {x: Math.floor(Math.random() * 5) - 200, y: -35, z: Math.floor(Math.random() * 5) - 600},
+        {x: Math.floor(Math.random() * 5) - 300, y: -35, z: Math.floor(Math.random() * 5) - 600},
+        {x: Math.floor(Math.random() * 5) - 300, y: -35, z: Math.floor(Math.random() * 5) - 600}
     ],
 });
 
 // "Atom" to store position(s) of mountain range
 let yCoordinate = -20;
-let zCoordinate = -775;
+let zCoordinate = -760;
 
 export const mountainPositionState = atom({
     key: "mountainPosition",
     default: [
         // {x: 0, y: yCoordinate, z: zCoordinate},
+        // Right side of mountain range (positives on x axis)
         {x: 30, y: yCoordinate, z: zCoordinate},
         {x: 60, y: yCoordinate, z: zCoordinate},
         {x: 90, y: yCoordinate, z: zCoordinate},
@@ -57,7 +63,27 @@ export const mountainPositionState = atom({
         {x: 570, y: yCoordinate, z: zCoordinate},
         {x: 600, y: yCoordinate, z: zCoordinate},
         {x: 630, y: yCoordinate, z: zCoordinate},
+        {x: 660, y: yCoordinate, z: zCoordinate},
+        {x: 690, y: yCoordinate, z: zCoordinate},
+        {x: 720, y: yCoordinate, z: zCoordinate},
+        {x: 750, y: yCoordinate, z: zCoordinate},
+        {x: 780, y: yCoordinate, z: zCoordinate},
+        {x: 810, y: yCoordinate, z: zCoordinate},
+        {x: 840, y: yCoordinate, z: zCoordinate},
+        {x: 870, y: yCoordinate, z: zCoordinate},
+        {x: 900, y: yCoordinate, z: zCoordinate},
+        {x: 930, y: yCoordinate, z: zCoordinate},
+        {x: 960, y: yCoordinate, z: zCoordinate},
+        {x: 990, y: yCoordinate, z: zCoordinate},
+        {x: 1020, y: yCoordinate, z: zCoordinate},
+        {x: 1050, y: yCoordinate, z: zCoordinate},
+        {x: 1080, y: yCoordinate, z: zCoordinate},
+        {x: 1110, y: yCoordinate, z: zCoordinate},
+        {x: 1140, y: yCoordinate, z: zCoordinate},
+        {x: 1170, y: yCoordinate, z: zCoordinate},
+        {x: 2000, y: yCoordinate, z: zCoordinate},
 
+        // Left side of mountain range (negatives on x axis)
         {x: -30, y: yCoordinate, z: zCoordinate},
         {x: -60, y: yCoordinate, z: zCoordinate},
         {x: -90, y: yCoordinate, z: zCoordinate},
@@ -79,6 +105,25 @@ export const mountainPositionState = atom({
         {x: -570, y: yCoordinate, z: zCoordinate},
         {x: -600, y: yCoordinate, z: zCoordinate},
         {x: -630, y: yCoordinate, z: zCoordinate},
+        {x: -660, y: yCoordinate, z: zCoordinate},
+        {x: -690, y: yCoordinate, z: zCoordinate},
+        {x: -720, y: yCoordinate, z: zCoordinate},
+        {x: -750, y: yCoordinate, z: zCoordinate},
+        {x: -780, y: yCoordinate, z: zCoordinate},
+        {x: -810, y: yCoordinate, z: zCoordinate},
+        {x: -840, y: yCoordinate, z: zCoordinate},
+        {x: -870, y: yCoordinate, z: zCoordinate},
+        {x: -900, y: yCoordinate, z: zCoordinate},
+        {x: -930, y: yCoordinate, z: zCoordinate},
+        {x: -960, y: yCoordinate, z: zCoordinate},
+        {x: -990, y: yCoordinate, z: zCoordinate},
+        {x: -1020, y: yCoordinate, z: zCoordinate},
+        {x: -1050, y: yCoordinate, z: zCoordinate},
+        {x: -1080, y: yCoordinate, z: zCoordinate},
+        {x: -1110, y: yCoordinate, z: zCoordinate},
+        {x: -1140, y: yCoordinate, z: zCoordinate},
+        {x: -1170, y: yCoordinate, z: zCoordinate},
+        {x: -2000, y: yCoordinate, z: zCoordinate},
     ],
 });
 
